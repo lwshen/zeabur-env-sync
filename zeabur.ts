@@ -65,14 +65,14 @@ const getVariablesQuery = gql`
 `;
 
 const updateVariablesMutation = gql`
-  mutation UpdateVariables(
+  mutation UpdateEnvironmentVariable(
     $serviceId: ObjectID!
     $envId: ObjectID!
     $data: Map!
   ) {
     updateEnvironmentVariable(
-      environmentID: $envId
       serviceID: $serviceId
+      environmentID: $envId
       data: $data
     )
   }
@@ -108,7 +108,7 @@ export async function updateZeaburVariables(variables: EnvironmentVariable[]) {
   const result: any = await client.request(updateVariablesMutation, {
     serviceId,
     envId,
-    data,
+    data: Object.fromEntries(data),
   });
 
   return result;
