@@ -67,10 +67,6 @@ async function runSync() {
   if (diff.toAdd.length + diff.toUpdate.length + diff.toDelete.length === 0) {
     console.log("No changes needed");
 
-    // Send notification for no changes
-    const payload = createNotificationPayload(diff, true);
-    await sendNotification(payload);
-
     return;
   }
 
