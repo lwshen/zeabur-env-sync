@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import type { EnvironmentVariable } from './type';
+import type { EnvironmentVariable, VariablesDiff } from './type';
 
 /**
  * Parse .env file content into EnvironmentVariable array
@@ -19,19 +19,6 @@ export function parseEnvToVariables(envContent: string): EnvironmentVariable[] {
       key,
       value,
     }));
-}
-
-/**
- * Diff result showing what variables need to be updated
- */
-export interface VariablesDiff {
-  toAdd: EnvironmentVariable[];
-  toUpdate: Array<{
-    key: string;
-    oldValue: string;
-    newValue: string;
-  }>;
-  toDelete: EnvironmentVariable[];
 }
 
 /**

@@ -6,6 +6,7 @@ import {
   restartZeaburService,
   updateZeaburVariables,
 } from "./zeabur";
+import { sendNotification, createNotificationPayload } from "./notifier";
 
 /**
  * Core sync logic - fetches from VaultHub, compares with Zeabur, and applies changes
@@ -65,12 +66,21 @@ async function runSync() {
 
   if (diff.toAdd.length + diff.toUpdate.length + diff.toDelete.length === 0) {
     console.log("No changes needed");
+
+    // Send notification for no changes
+    const payload = createNotificationPayload(diff, true);
+    await sendNotification(payload);
+
     return;
   }
 
   const updateResult = await updateZeaburVariables(parsedVaultVariables);
 
   const restartResult = await restartZeaburService();
+
+  // Send notification for successful sync
+  const payload = createNotificationPayload(diff, true);
+  await sendNotification(payload);
 
   return {
     diff,
@@ -91,6 +101,16 @@ async function runSyncWithErrorHandling() {
     console.log(`[${timestamp}] Sync completed successfully`);
   } catch (error) {
     console.error(`[${timestamp}] Sync failed:`, error);
+
+    // Send error notification
+    const emptyDiff = { toAdd: [], toUpdate: [], toDelete: [] };
+    const payload = createNotificationPayload(
+      emptyDiff,
+      false,
+      error as Error
+    );
+    await sendNotification(payload);
+
     // Don't throw - let scheduler continue
   }
 }
@@ -144,6 +164,16 @@ async function main() {
       await runSync();
     } catch (error) {
       console.error("Error:", error);
+
+      // Send error notification for one-time execution
+      const emptyDiff = { toAdd: [], toUpdate: [], toDelete: [] };
+      const payload = createNotificationPayload(
+        emptyDiff,
+        false,
+        error as Error
+      );
+      await sendNotification(payload);
+
       process.exit(1);
     }
   } else {
