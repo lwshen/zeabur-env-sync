@@ -1,0 +1,44 @@
+# Dependencies (will be installed fresh in container)
+node_modules/
+
+# Environment files (should be mounted or injected at runtime)
+.env
+.env.*
+!.env.example
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Development files
+*.log
+*.md
+!README.md
+CLAUDE.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__/
+coverage/
+
+# Documentation
+docs/
+LICENSE

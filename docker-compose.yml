@@ -1,0 +1,23 @@
+services:
+  zeabur-env-sync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zeabur-env-sync
+
+    # Load all environment variables from .env file
+    env_file:
+      - .env
+
+    # Restart policy: only restart on failure, not on successful exit (code 0)
+    # - If exit code = 0: container stops (one-time sync completed successfully)
+    # - If exit code != 0: container restarts (error occurred)
+    # - Useful for scheduled mode (CRON_SCHEDULE) to keep running on errors
+    restart: on-failure
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
