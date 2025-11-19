@@ -1,3 +1,4 @@
+import Baker from "cronbake";
 import { compareVariables, parseEnvToVariables } from "./utils";
 import { getVaultHubVault } from "./vault-hub";
 import {
@@ -6,7 +7,10 @@ import {
   updateZeaburVariables,
 } from "./zeabur";
 
-async function main() {
+/**
+ * Core sync logic - fetches from VaultHub, compares with Zeabur, and applies changes
+ */
+async function runSync() {
   const existingVariables = await getZeaburVariables();
   const vaultVariables = await getVaultHubVault();
   const parsedVaultVariables = parseEnvToVariables(vaultVariables.value);
@@ -65,16 +69,87 @@ async function main() {
   }
 
   const updateResult = await updateZeaburVariables(parsedVaultVariables);
-  console.log("Update result:", updateResult);
 
   const restartResult = await restartZeaburService();
-  console.log("Restart result:", restartResult);
 
   return {
     diff,
     updateResult,
     restartResult,
   };
+}
+
+/**
+ * Wrapper for runSync with error handling for scheduled execution
+ */
+async function runSyncWithErrorHandling() {
+  const timestamp = new Date().toISOString();
+  console.log(`\n[${timestamp}] Starting sync...`);
+
+  try {
+    await runSync();
+    console.log(`[${timestamp}] Sync completed successfully`);
+  } catch (error) {
+    console.error(`[${timestamp}] Sync failed:`, error);
+    // Don't throw - let scheduler continue
+  }
+}
+
+/**
+ * Start the cron scheduler
+ */
+function startScheduler(cronSchedule: string) {
+  console.log(`Starting scheduler with schedule: ${cronSchedule}`);
+  console.log("Press Ctrl+C to stop\n");
+
+  const baker = Baker.create({
+    autoStart: true,
+  });
+
+  baker.add({
+    name: "zeabur-env-sync",
+    cron: cronSchedule,
+    overrunProtection: true, // Skip if previous sync still running
+    callback: async () => {
+      await runSyncWithErrorHandling();
+    },
+    onTick: () => {
+      // Job started
+    },
+    onComplete: () => {
+      // Job finished successfully
+    },
+    onError: (error) => {
+      console.error("Scheduler error:", error.message);
+    },
+  });
+
+  // Keep process alive
+  process.on("SIGINT", () => {
+    console.log("\nShutting down scheduler...");
+    baker.stopAll();
+    process.exit(0);
+  });
+}
+
+/**
+ * Main entry point - check for CRON_SCHEDULE and route appropriately
+ */
+async function main() {
+  const cronSchedule = Bun.env.CRON_SCHEDULE;
+
+  if (!cronSchedule) {
+    // One-time execution (original behavior)
+    try {
+      await runSync();
+    } catch (error) {
+      console.error("Error:", error);
+      process.exit(1);
+    }
+  } else {
+    // Scheduled execution
+    startScheduler(cronSchedule);
+  }
 }
 
 await main();
