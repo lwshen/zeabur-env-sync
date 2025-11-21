@@ -25,7 +25,7 @@ async function runSync() {
   console.log(`📝 Variables to ADD (${diff.toAdd.length}):`);
   if (diff.toAdd.length > 0) {
     diff.toAdd.forEach((v) => {
-      console.log(`  + ${v.key}: ${v.value}`);
+      console.log(`  + ${v.key}`);
     });
   } else {
     console.log("  (none)");
@@ -37,9 +37,7 @@ async function runSync() {
   console.log(`🔄 Variables to UPDATE (${diff.toUpdate.length}):`);
   if (diff.toUpdate.length > 0) {
     diff.toUpdate.forEach((v) => {
-      console.log(`  ~ ${v.key}:`);
-      console.log(`    - Old: ${v.oldValue}`);
-      console.log(`    + New: ${v.newValue}`);
+      console.log(`  ~ ${v.key}`);
     });
   } else {
     console.log("  (none)");
@@ -51,7 +49,7 @@ async function runSync() {
   console.log(`🗑️  Variables to DELETE (${diff.toDelete.length}):`);
   if (diff.toDelete.length > 0) {
     diff.toDelete.forEach((v) => {
-      console.log(`  - ${v.key}: ${v.value}`);
+      console.log(`  - ${v.key}`);
     });
   } else {
     console.log("  (none)");
